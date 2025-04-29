@@ -2,6 +2,7 @@ import numpy as np
 import scipy.ndimage
 import os
 import PIL.Image
+from PIL import Image
 
 
 def image_align(src_file, dst_file, face_landmarks, output_size=1024, transform_size=4096, enable_padding=True):
@@ -48,7 +49,7 @@ def image_align(src_file, dst_file, face_landmarks, output_size=1024, transform_
         shrink = int(np.floor(qsize / output_size * 0.5))
         if shrink > 1:
             rsize = (int(np.rint(float(img.size[0]) / shrink)), int(np.rint(float(img.size[1]) / shrink)))
-            img = img.resize(rsize, PIL.Image.ANTIALIAS)
+            img = img.resize(rsize, Image.Resampling.LANCZOS)
             quad /= shrink
             qsize /= shrink
 
@@ -72,13 +73,13 @@ def image_align(src_file, dst_file, face_landmarks, output_size=1024, transform_
             blur = qsize * 0.02
             img += (scipy.ndimage.gaussian_filter(img, [blur, blur, 0]) - img) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             img += (np.median(img, axis=(0,1)) - img) * np.clip(mask, 0.0, 1.0)
-            img = PIL.Image.fromarray(np.uint8(np.clip(np.rint(img), 0, 255)), 'RGB')
+            img = PIL.Image.fromarray(np.uint8(np.clip(np.rImage.Resampling.LANCZOSint(img), 0, 255)), 'RGB')
             quad += pad[:2]
 
         # Transform.
         img = img.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
-            img = img.resize((output_size, output_size), PIL.Image.ANTIALIAS)
+            img = img.resize((output_size, output_size), Image.Resampling.LANCZOS)
 
         # Save aligned image.
         img.save(dst_file, 'PNG')
